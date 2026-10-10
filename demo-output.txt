@@ -1,0 +1,99 @@
+== step1_world ==
+6 colours times 6 shapes: 36 things
+shown in training: 30 things, 6,000 pictures, each with a caption
+never shown: red triangle, green cross, blue ring, yellow diamond, purple circle, pink square
+one picture: 32 by 32 pixels, 3 numbers for each pixel, 3,072 numbers
+words in all captions: 21; ways to write a caption: 5
+  caption of picture 0: "the red circle"  as numbers: [18, 14, 3]
+  caption of picture 201: "a picture of a red square"  as numbers: [1, 11, 9, 1, 14, 17]
+  caption of picture 402: "this is a red cross"  as numbers: [19, 7, 1, 14, 4]
+fresh test pictures: 1,200 of the shown things, 1,200 of the never shown things
+== step2_fixed_list ==
+a list of 30 classes, 154,718 numbers, 1,500 training steps
+fresh pictures of the 30 things on its list: 75.6 % right on average over three starts (79.0 %, 77.0 %, 70.8 %)
+pictures of the 6 things that are not on its list: 0.0 % right (the right answer is not among its answers)
+  red triangle: it says "red square" 75 times, "red cross" 60 times (of 200)
+  green cross: it says "green diamond" 134 times, "green triangle" 29 times (of 200)
+  blue ring: it says "blue cross" 140 times, "blue square" 22 times (of 200)
+  yellow diamond: it says "yellow circle" 117 times, "yellow square" 56 times (of 200)
+  purple circle: it says "purple square" 99 times, "purple diamond" 88 times (of 200)
+  pink square: it says "pink circle" 134 times, "pink triangle" 33 times (of 200)
+its answer has the right colour in 99.2 % and the right shape in 0.8 % of them
+== step3_two_networks ==
+picture network: 224,384 numbers; text network: 73,152 numbers
+both turn their input into a list of 64 numbers
+how alike picture and caption are, six pictures against six captions (1 = same direction):
+  red circle       -0.25  -0.28  -0.33  -0.34  -0.21  -0.26
+  green square     -0.25  -0.24  -0.31  -0.33  -0.21  -0.21
+  blue triangle    -0.26  -0.25  -0.32  -0.34  -0.22  -0.23
+  yellow cross     -0.28  -0.27  -0.34  -0.34  -0.22  -0.26
+  purple ring      -0.25  -0.25  -0.32  -0.34  -0.21  -0.23
+  pink diamond     -0.26  -0.28  -0.33  -0.34  -0.22  -0.25
+pick the right caption out of 36: 0.0 % right (a blind guess: 2.8 %)
+== step4_pull ==
+start 0: miss 5.01 -> 0.94; right caption out of 36: 0.0 % -> 96.2 %
+start 1: miss 4.40 -> 0.92; right caption out of 36: 2.6 % -> 94.4 %
+start 2: miss 4.79 -> 0.93; right caption out of 36: 3.3 % -> 95.2 %
+batch of 64 pairs, 1,500 steps, 96,000 pairs looked at
+start 0, right caption out of 36 by step: 0: 0.0 %, 250: 42.6 %, 500: 84.3 %, 750: 94.9 %, 1000: 97.0 %, 1250: 94.8 %, 1500: 96.2 %
+the six pictures against the six captions after training:
+  red circle        0.80   0.19  -0.62   0.12  -0.60   0.31
+  green square      0.10   0.82   0.29  -0.39  -0.16  -0.23
+  blue triangle    -0.52   0.04   0.85  -0.33   0.38  -0.48
+  yellow cross     -0.25  -0.41  -0.14   0.83  -0.24  -0.00
+  purple ring      -0.33  -0.19   0.18  -0.26   0.86  -0.43
+  pink diamond      0.61  -0.02  -0.41   0.12  -0.44   0.88
+fresh pictures of the 30 shown things, right caption out of 36: 95.3 % on average over three starts
+the temperature moved from 0.07 to 0.046
+== step5_never_shown ==
+pictures of the 6 never shown things:
+  right caption out of all 36: 79.8 % on average (83.0 %, 84.8 %, 71.6 %); a blind guess: 2.8 %
+  right caption out of the 6 new ones: 99.7 % on average; a blind guess: 16.7 %
+  red triangle: 97.5 % right; most common mistake "red square" 4 times
+  green cross: 52.0 % right; most common mistake "green ring" 84 times
+  blue ring: 94.0 % right; most common mistake "blue cross" 12 times
+  yellow diamond: 78.5 % right; most common mistake "yellow cross" 35 times
+  purple circle: 81.0 % right; most common mistake "purple square" 32 times
+  pink square: 95.0 % right; most common mistake "pink triangle" 7 times
+captions written as "red triangle", a form the training never used: 78.3 %
+the average of all 5 ways to write the caption: 80.9 %
+a never read caption against the others: 0.42 alike with the same colour, 0.50 with the same shape, -0.07 with neither
+search in 2,400 fresh pictures, share of the top 20 that fit: 100.0 % for the 6 never shown things, 94.7 % for the 30 shown things
+== step6_what_matters ==
+pairs compared at once, every run looks at the same 96,000 pairs (average of two starts):
+    4 at once, 24,000 steps: shown things 77.1 %, never shown things 63.0 %
+   16 at once,  6,000 steps: shown things 97.2 %, never shown things 88.5 %
+   64 at once,  1,500 steps: shown things 95.3 %, never shown things 83.9 %
+  256 at once,    375 steps: shown things 82.2 %, never shown things 50.8 %
+pairs compared at once, every run takes the same 1,500 steps:
+    4 at once: shown things 18.8 %, never shown things 22.6 %
+   16 at once: shown things 53.6 %, never shown things 34.4 %
+   64 at once: shown things 95.3 %, never shown things 83.9 %
+  256 at once: shown things 86.8 %, never shown things 70.9 %
+other pairs of the same thing in a batch, on average: 4 at once: 0.1, 16 at once: 0.5, 64 at once: 2.1, 256 at once: 8.5
+  256 at once, captions of the same thing are not counted as wrong: shown things 97.4 %, never shown things 80.2 %
+temperature, 64 at once (average of two starts):
+  fixed at 1                    : shown things 18.3 %, never shown things 24.9 %
+  fixed at 0.07                 : shown things 93.4 %, never shown things 77.0 %
+  fixed at 0.01                 : shown things 95.0 %, never shown things 72.4 %
+  starts at 0.07 and is learned : shown things 95.3 %, never shown things 83.9 %, ends at 0.045
+the most a perfect model can bet on the right caption out of 64: 10.5 % at temperature 1, 100.0 % at 0.07
+== step7_word_order ==
+6,000 pictures with two things. A caption: "the pink diamond is right of the red ring". The same with the things swapped: "the pink diamond is left of the red ring"
+trained as before:
+  after 1,500 steps: right caption against 63 captions of other pictures 82.6 % (a blind guess: 1.6 %)
+  after 1,500 steps: right caption against the swapped caption 50.9 % (a blind guess: 50.0 %)
+  against the swapped caption by step: 0: 50.1 %, 1000: 51.1 %, 2000: 49.0 %, 3000: 50.9 %, 4000: 72.5 %, 5000: 73.1 %, 6000: 93.8 %
+  after 6,000 steps: 93.8 % against the swapped caption, 92.8 % against 63 others
+trained with the swapped caption as one more wrong answer for every picture:
+  after 1,500 steps: right caption against 63 captions of other pictures 83.3 % (a blind guess: 1.6 %)
+  after 1,500 steps: right caption against the swapped caption 71.5 % (a blind guess: 50.0 %)
+  against the swapped caption by step: 0: 50.1 %, 1000: 49.8 %, 2000: 92.8 %, 3000: 97.5 %, 4000: 100.0 %, 5000: 100.0 %, 6000: 100.0 %
+  after 6,000 steps: 100.0 % against the swapped caption, 95.6 % against 63 others
+chance that a batch of 64 holds the mirrored picture of a given picture: 5.0 %
+== exercise ==
+a caption: "the purple ring is left of the blue square"; with the colours swapped: "the blue ring is left of the purple square"
+trained as before, 1,500 steps: right caption against the recoloured one 48.9 % (a blind guess: 50.0 %)
+trained with the recoloured caption as one more wrong answer, 1,500 steps: right caption against the recoloured one 100.0 % (a blind guess: 50.0 %)
+== tests ==
+all checks passed
